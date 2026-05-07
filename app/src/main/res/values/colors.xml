@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black_mate">#0B0B0B</color>
+    <color name="verde_cancha">#1E8449</color>
+    <color name="verde_neon">#00FF7F</color>
+    <color name="white">#FFFFFF</color>
+    <color name="gray_text">#AAAAAA</color>
+
+    <!-- Material 3 mappings -->
+    <color name="primary">#1E8449</color>
+    <color name="secondary">#00FF7F</color>
+    <color name="background">#0B0B0B</color>
+    <color name="surface">#1A1A1A</color>
+</resources>
