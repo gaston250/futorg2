@@ -1,252 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black_mate"
     android:fitsSystemWindows="true">
 
-    <FrameLayout
-        android:id="@+id/container"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_fragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="60dp">
+        android:layout_above="@+id/bottomNavigation"
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav_graph" />
 
-        <!-- SECCIÓN HOME -->
-        <androidx.core.widget.NestedScrollView
-            android:id="@+id/section_home"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="visible">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="24dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="futorg"
-                        android:textColor="@color/verde_neon"
-                        android:textSize="28sp"
-                        android:textStyle="bold"
-                        android:layout_centerVertical="true"/>
-
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_alignParentEnd="true"
-                        android:src="@drawable/ic_soccer_ball"
-                        android:contentDescription="Logo Pelota"
-                        app:tint="@color/verde_cancha" />
-                </RelativeLayout>
-
-                <!-- Próximo Partido -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:cardCornerRadius="20dp"
-                    app:cardBackgroundColor="@color/surface"
-                    app:strokeColor="@color/verde_cancha"
-                    app:strokeWidth="1dp"
-                    android:layout_marginBottom="24dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="20dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="PRÓXIMO PARTIDO"
-                            android:textColor="@color/verde_neon"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:letterSpacing="0.1"/>
-
-                        <TextView
-                            android:id="@+id/tvLugar"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Complejo El Campito"
-                            android:textColor="@color/white"
-                            android:textSize="20sp"
-                            android:textStyle="bold"
-                            android:layout_marginTop="8dp"/>
-
-                        <TextView
-                            android:id="@+id/tvFechaHora"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Viernes 21:00 hs"
-                            android:textColor="@color/gray_text"
-                            android:layout_marginTop="4dp"/>
-
-                        <TextView
-                            android:id="@+id/tvPrecio"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="$2.500"
-                            android:textColor="@color/verde_neon"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:layout_marginTop="12dp"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Top Goleadores"
-                    android:textColor="@color/white"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="12dp"/>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvRanking"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false"/>
-            </LinearLayout>
-        </androidx.core.widget.NestedScrollView>
-
-        <!-- SECCIÓN RANKING -->
-        <LinearLayout
-            android:id="@+id/section_ranking"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:padding="16dp"
-            android:visibility="gone">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Ranking General"
-                android:textColor="@color/verde_neon"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="20dp"/>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="16dp"
-                app:cardBackgroundColor="@color/surface">
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="20dp"
-                    android:text="Aquí aparecerá la tabla de posiciones completa próximamente."
-                    android:textColor="@color/white"
-                    android:gravity="center"/>
-            </com.google.android.material.card.MaterialCardView>
-        </LinearLayout>
-
-        <!-- SECCIÓN CREAR -->
-        <LinearLayout
-            android:id="@+id/section_create"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:padding="16dp"
-            android:visibility="gone">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Crear Partido"
-                android:textColor="@color/verde_neon"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="20dp"/>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Lugar del partido"
-                android:layout_marginBottom="12dp"
-                app:hintTextColor="@color/verde_neon"
-                app:boxStrokeColor="@color/verde_neon"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-                <com.google.android.material.textfield.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/white"/>
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.button.MaterialButton
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:text="ORGANIZAR AHORA"
-                app:cornerRadius="12dp"
-                android:backgroundTint="@color/verde_cancha"/>
-        </LinearLayout>
-
-        <!-- SECCIÓN PERFIL -->
-        <LinearLayout
-            android:id="@+id/section_profile"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:padding="16dp"
-            android:visibility="gone">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Mi Perfil"
-                android:textColor="@color/verde_neon"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="20dp"/>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="16dp"
-                app:cardBackgroundColor="@color/surface"
-                android:layout_marginBottom="20dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Estadísticas Personales"
-                        android:textColor="@color/verde_neon"
-                        android:textStyle="bold"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Partidos Jugados: 12"
-                        android:textColor="@color/white"
-                        android:layout_marginTop="8dp"/>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-        </LinearLayout>
-
-    </FrameLayout>
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabCreateMatch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/bottomNavigation"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp"
+        android:src="@android:drawable/ic_menu_add"
+        app:backgroundTint="@color/verde_neon"
+        app:tint="@color/black_mate"
+        android:visibility="visible"/>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:layout_gravity="bottom"
+        android:layout_alignParentBottom="true"
         app:backgroundTint="@color/surface"
         app:itemIconTint="@color/verde_neon"
         app:itemTextColor="@color/white"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_nav_menu" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</RelativeLayout>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="12dp"
+    android:layout_marginBottom="4dp"
+    android:background="@color/surface">
+
+    <TextView
+        android:id="@+id/tvRankNum"
+        android:layout_width="24dp"
+        android:layout_height="wrap_content"
+        android:text="1"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:gravity="center"/>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="12dp">
+        <TextView
+            android:id="@+id/tvRankNombre"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nombre Jugador"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/tvRankPos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delantero"
+            android:textColor="@color/gray_text"
+            android:textSize="10sp"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvRankPJ"
+        android:layout_width="32dp"
+        android:layout_height="wrap_content"
+        android:text="12"
+        android:textColor="@color/white"
+        android:textSize="12sp"
+        android:gravity="center"/>
+
+    <TextView
+        android:id="@+id/tvRankGoles"
+        android:layout_width="32dp"
+        android:layout_height="wrap_content"
+        android:text="8"
+        android:textColor="@color/white"
+        android:textSize="12sp"
+        android:gravity="center"/>
+
+    <TextView
+        android:id="@+id/tvRankWR"
+        android:layout_width="48dp"
+        android:layout_height="wrap_content"
+        android:text="75%"
+        android:textColor="@color/verde_neon"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:gravity="end"/>
+
+</LinearLayout>

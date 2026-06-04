@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black_mate">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Tarjeta de Perfil -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="24dp"
+            app:cardBackgroundColor="@color/surface"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:gravity="center">
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/ivPerfilFotoPro"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:src="@drawable/ic_soccer_ball"
+                        app:shapeAppearanceOverlay="@style/CircleImage"
+                        android:padding="2dp"
+                        app:strokeColor="@color/verde_neon"
+                        app:strokeWidth="3dp"
+                        app:tint="@color/verde_neon" />
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBottom="@id/ivPerfilFotoPro"
+                        android:layout_alignEnd="@id/ivPerfilFotoPro"
+                        app:fabSize="mini"
+                        android:src="@android:drawable/ic_menu_camera"
+                        app:backgroundTint="@color/verde_neon"
+                        app:tint="@color/black_mate" />
+                </RelativeLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxStrokeColor="@color/verde_neon"
+                    app:hintTextColor="@color/verde_neon"
+                    android:layout_marginTop="12dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPerfilNombre"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Nombre"
+                        android:textColor="@color/white"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:gravity="center"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/tvPerfilSubtitulo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Delantero • Nivel 7"
+                    android:textColor="@color/verde_neon"
+                    android:textSize="14sp"
+                    android:layout_marginTop="4dp"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="16dp">
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipDisponible"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Disponible"
+                        android:textColor="@color/white"
+                        app:chipBackgroundColor="#2E7D32"
+                        app:chipIcon="@android:drawable/presence_online"
+                        android:textSize="10sp"/>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Estadísticas -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ESTADÍSTICAS DE TEMPORADA"
+            android:textColor="@color/gray_text"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="12dp"/>
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="3"
+            android:rowCount="2"
+            android:alignmentMode="alignMargins"
+            android:columnOrderPreserved="false">
+            <include layout="@layout/item_stat_small" android:layout_columnWeight="1" />
+            <include layout="@layout/item_stat_small" android:layout_columnWeight="1" />
+            <include layout="@layout/item_stat_small" android:layout_columnWeight="1" />
+            <include layout="@layout/item_stat_small" android:layout_columnWeight="1" />
+            <include layout="@layout/item_stat_small" android:layout_columnWeight="1" />
+            <include layout="@layout/item_stat_small" android:layout_columnWeight="1" />
+        </GridLayout>
+
+        <!-- Ajustes -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="@color/surface">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <include layout="@layout/item_menu_setting" />
+                <include layout="@layout/item_menu_setting" />
+                <include layout="@layout/item_menu_setting" />
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#333333" android:layout_marginHorizontal="16dp"/>
+                <include layout="@layout/item_menu_setting" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGuardarPerfil"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="GUARDAR CAMBIOS"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"
+            android:backgroundTint="@color/verde_neon"
+            android:textColor="@color/black_mate"
+            android:layout_marginBottom="32dp"/>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -1,11 +1,32 @@
 <resources>
-    <string name="app_name">futorg</string>
-    <string name="action_go">Go</string>
-    <string name="baking_title">Baking with Gemini</string>
-    <string name="label_prompt">Prompt</string>
-    <string name="prompt_placeholder">Provide a recipe for the baked goods in the image</string>
-    <string name="image1_description">Cupcake</string>
-    <string name="image2_description">Cookies</string>
-    <string name="image3_description">Cake</string>
-    <string name="results_placeholder">(Results will appear here)</string>
+    <string name="app_name">My Application</string>
+
+    <!-- Login -->
+    <string name="login_title">Bienvenido</string>
+    <string name="register_title">Crea tu cuenta</string>
+    <string name="login_button">INGRESAR</string>
+    <string name="register_button">REGISTRARME</string>
+    <string name="toggle_to_register">¿No tienes cuenta? Regístrate</string>
+    <string name="toggle_to_login">¿Ya tienes cuenta? Ingresa</string>
+    <string name="error_empty_fields">Completa todos los campos</string>
+
+    <!-- MainActivity -->
+    <string name="ranking_title">Ranking</string>
+    <string name="matches_title">Partidos</string>
+    <string name="profile_title">Perfil</string>
+
+    <!-- Create Partido -->
+    <string name="organize_match">Organizar Partido</string>
+    <string name="place_hint">Lugar</string>
+    <string name="date_time_hint">Fecha y Hora</string>
+    <string name="price_hint">Precio por persona</string>
+    <string name="alias_hint">Alias para transferencia</string>
+    <string name="match_type">Tipo de Partido</string>
+    <string name="create_match_button">CREAR Y NOTIFICAR</string>
+    <string name="success_match_created">Partido creado con éxito</string>
+
+    <!-- Profile -->
+    <string name="save_changes">GUARDAR CAMBIOS</string>
+    <string name="profile_updated">Perfil actualizado</string>
+    <string name="logout">Cerrar Sesión</string>
 </resources>

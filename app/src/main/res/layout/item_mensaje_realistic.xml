@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <!-- Avatar -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cvAvatar"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        app:cardCornerRadius="16dp"
+        app:cardBackgroundColor="@color/surface"
+        app:strokeColor="@color/verde_neon"
+        app:strokeWidth="1dp"
+        android:layout_alignParentStart="true"
+        android:layout_marginEnd="8dp">
+        <TextView
+            android:id="@+id/tvAvatarMsg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="L"
+            android:textColor="@color/white"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:textStyle="bold"/>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Burbuja -->
+    <LinearLayout
+        android:id="@+id/llBubbleContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="10dp"
+        android:layout_toEndOf="@id/cvAvatar"
+        android:background="@drawable/bg_chat_input">
+
+        <TextView
+            android:id="@+id/tvNombreMsg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lucas M."
+            android:textColor="@color/verde_neon"
+            android:textSize="11sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/tvTextoMsg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="¡Anotado!"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:layout_marginTop="2dp"/>
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/nav_home">
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.example.myapplication.ui.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/nav_partidos"
+        android:name="com.example.myapplication.ui.PartidosFragment"
+        android:label="Partidos"
+        tools:layout="@layout/fragment_partidos" />
+
+    <fragment
+        android:id="@+id/nav_chat"
+        android:name="com.example.myapplication.ui.ChatFragment"
+        android:label="Chat"
+        tools:layout="@layout/fragment_chat" />
+
+    <fragment
+        android:id="@+id/nav_friends"
+        android:name="com.example.myapplication.ui.FriendsFragment"
+        android:label="Amigos"
+        tools:layout="@layout/fragment_friends" />
+
+    <fragment
+        android:id="@+id/nav_profile"
+        android:name="com.example.myapplication.ui.ProfileFragment"
+        android:label="Perfil"
+        tools:layout="@layout/fragment_profile" />
+
+    <fragment
+        android:id="@+id/nav_create_partido"
+        android:name="com.example.myapplication.ui.CreatePartidoFragment"
+        android:label="Crear Partido"
+        tools:layout="@layout/fragment_create_partido" />
+
+</navigation>
