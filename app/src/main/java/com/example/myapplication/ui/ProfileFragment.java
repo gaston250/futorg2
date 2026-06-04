@@ -1,6 +1,7 @@
 package com.example.myapplication.ui;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +19,7 @@ import com.example.myapplication.databinding.FragmentProfileBinding;
 import com.example.myapplication.models.Jugador;
 import com.example.myapplication.network.RetrofitClient;
 import com.example.myapplication.network.SupabaseApi;
+import com.example.myapplication.utils.UiUtils;
 
 import java.util.List;
 
@@ -27,10 +29,12 @@ import retrofit2.Response;
 
 public class ProfileFragment extends Fragment {
 
+    private static final int REQUEST_CODE_FOTO = 1001;
     private FragmentProfileBinding binding;
     private MainViewModel viewModel;
     private SupabaseApi supabaseApi;
     private AuthManager authManager;
+    private Jugador currentJugador;
 
     @Nullable
     @Override
@@ -48,11 +52,9 @@ public class ProfileFragment extends Fragment {
 
         loadUserProfile();
 
+        binding.fabCamara.setOnClickListener(v -> abrirSelectorFoto());
         binding.btnGuardarPerfil.setOnClickListener(v -> updateProfile());
         
-        // Asumiendo que hay una forma de hacer logout, la agregaremos aquí.
-        // Como el layout es complejo con includes, usaremos un long click en la foto por ahora
-        // o buscaremos el botón de logout si estuviera definido.
         binding.ivPerfilFotoPro.setOnLongClickListener(v -> {
             logout();
             return true;
@@ -60,49 +62,63 @@ public class ProfileFragment extends Fragment {
     }
 
     private void loadUserProfile() {
-        String email = authManager.getUserId(); // O el email si lo guardamos
-        // En este caso, buscaremos por el email guardado en AuthManager si existe
-        // o por el nombre de usuario. Supongamos que guardamos el email.
+        String email = authManager.getUserEmail();
+        if (email == null) return;
         
-        // Mocking behavior if API fails or for demo
         binding.etPerfilNombre.setText(authManager.getUserName());
         
-        supabaseApi.getJugadorByEmail("eq." + authManager.getToken(), "*").enqueue(new Callback<List<Jugador>>() {
+        supabaseApi.getJugadorByEmail("*", "email.eq." + email).enqueue(new Callback<List<Jugador>>() {
             @Override
-            public void onResponse(Call<List<Jugador>> call, Response<List<Jugador>> response) {
+            public void onResponse(@NonNull Call<List<Jugador>> call, @NonNull Response<List<Jugador>> response) {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
-                    Jugador jugador = response.body().get(0);
-                    binding.etPerfilNombre.setText(jugador.getNombre());
-                    binding.tvPerfilSubtitulo.setText(jugador.getPosicion() + " • Nivel " + jugador.getNivel());
-                    binding.chipDisponible.setText(jugador.getDisponibilidad());
+                    currentJugador = response.body().get(0);
+                    binding.etPerfilNombre.setText(currentJugador.getNombre());
+                    binding.tvPerfilSubtitulo.setText(currentJugador.getPosicion() + " • Nivel " + currentJugador.getNivel());
+                    binding.chipDisponible.setText(currentJugador.getDisponibilidad());
                 }
             }
 
             @Override
-            public void onFailure(Call<List<Jugador>> call, Throwable t) {
-                // Ignore error, keep local data
+            public void onFailure(@NonNull Call<List<Jugador>> call, @NonNull Throwable t) {
             }
         });
     }
 
     private void updateProfile() {
         String nuevoNombre = binding.etPerfilNombre.getText().toString().trim();
-        if (nuevoNombre.isEmpty()) return;
+        if (nuevoNombre.isEmpty()) {
+            UiUtils.mostrarToast(requireContext(), "El nombre no puede estar vacío");
+            return;
+        }
 
-        Jugador jugador = new Jugador();
-        jugador.setNombre(nuevoNombre);
-
-        supabaseApi.updatePerfil("eq." + authManager.getToken(), jugador).enqueue(new Callback<Void>() {
+        binding.btnGuardarPerfil.setEnabled(false);
+        
+        // Si no cargamos el perfil aún, creamos uno básico, 
+        // pero lo ideal es esperar a que currentJugador no sea null
+        Jugador jugadorUpdate = currentJugador != null ? currentJugador : new Jugador();
+        jugadorUpdate.setNombre(nuevoNombre);
+        // Asegurarse de no enviar el ID en el cuerpo del PATCH si es null o problemático,
+        // aunque GSON no envía nulls por defecto.
+        
+        supabaseApi.updatePerfil(
+            "eq." + authManager.getUserEmail(),
+            jugadorUpdate
+        ).enqueue(new Callback<Void>() {
             @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                binding.btnGuardarPerfil.setEnabled(true);
                 if (response.isSuccessful()) {
-                    Toast.makeText(requireContext(), "Perfil actualizado", Toast.LENGTH_SHORT).show();
+                    UiUtils.mostrarToast(requireContext(), "Perfil actualizado ✅");
+                    authManager.setUserName(nuevoNombre);
+                } else {
+                    UiUtils.mostrarToast(requireContext(), "Error: " + response.code());
                 }
             }
 
             @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                Toast.makeText(requireContext(), "Error al actualizar", Toast.LENGTH_SHORT).show();
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                binding.btnGuardarPerfil.setEnabled(true);
+                UiUtils.mostrarToast(requireContext(), "Error de red: " + t.getMessage());
             }
         });
     }
@@ -113,6 +129,31 @@ public class ProfileFragment extends Fragment {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         requireActivity().finish();
+    }
+
+    private void abrirSelectorFoto() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(intent, REQUEST_CODE_FOTO);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_FOTO && resultCode == android.app.Activity.RESULT_OK && data != null) {
+            Uri selectedImage = data.getData();
+            if (selectedImage != null) {
+                binding.ivPerfilFotoPro.setImageURI(selectedImage);
+                subirFotoPerfil(selectedImage);
+            }
+        }
+    }
+
+    private void subirFotoPerfil(Uri selectedImage) {
+        // En una app real, aquí se subiría la imagen a Supabase Storage
+        // y se obtendría la URL para actualizar el campo foto_url del jugador.
+        UiUtils.mostrarToast(requireContext(), "Foto seleccionada (Pendiente subir a Storage)");
     }
 
     @Override

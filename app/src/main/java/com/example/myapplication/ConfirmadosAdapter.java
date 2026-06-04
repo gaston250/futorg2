@@ -7,15 +7,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ConfirmadosAdapter extends RecyclerView.Adapter<ConfirmadosAdapter.ViewHolder> {
+public class ConfirmadosAdapter extends ListAdapter<String, ConfirmadosAdapter.ViewHolder> {
 
-    private final List<String> nombres;
     private final Set<String> pagados = new HashSet<>();
     private final boolean isAdmin;
     private final OnPagoChangeListener pagoListener;
@@ -24,8 +25,18 @@ public class ConfirmadosAdapter extends RecyclerView.Adapter<ConfirmadosAdapter.
         void onPagoChanged(String nombreJugador, boolean pagado, int totalPagados);
     }
 
-    public ConfirmadosAdapter(List<String> nombres, boolean isAdmin, OnPagoChangeListener listener) {
-        this.nombres = nombres;
+    public ConfirmadosAdapter(boolean isAdmin, OnPagoChangeListener listener) {
+        super(new DiffUtil.ItemCallback<String>() {
+            @Override
+            public boolean areItemsTheSame(@NonNull String oldItem, @NonNull String newItem) {
+                return oldItem.equals(newItem);
+            }
+
+            @Override
+            public boolean areContentsTheSame(@NonNull String oldItem, @NonNull String newItem) {
+                return oldItem.equals(newItem);
+            }
+        });
         this.isAdmin = isAdmin;
         this.pagoListener = listener;
     }
@@ -39,7 +50,7 @@ public class ConfirmadosAdapter extends RecyclerView.Adapter<ConfirmadosAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        String nombre = nombres.get(position);
+        String nombre = getItem(position);
         holder.tvNombre.setText(nombre);
         
         boolean estaPagado = pagados.contains(nombre);
@@ -54,20 +65,19 @@ public class ConfirmadosAdapter extends RecyclerView.Adapter<ConfirmadosAdapter.
                 if (nuevoEstado) pagados.add(nombre);
                 else pagados.remove(nombre);
                 
-                notifyItemChanged(position);
-                pagoListener.onPagoChanged(nombre, nuevoEstado, pagados.size());
+                notifyItemChanged(holder.getBindingAdapterPosition());
+                if (pagoListener != null) {
+                    pagoListener.onPagoChanged(nombre, nuevoEstado, pagados.size());
+                }
             });
         }
     }
 
-    @Override
-    public int getItemCount() {
-        return nombres.size();
-    }
-
     public void setPagados(List<String> nombresPagados) {
         this.pagados.clear();
-        this.pagados.addAll(nombresPagados);
+        if (nombresPagados != null) {
+            this.pagados.addAll(nombresPagados);
+        }
         notifyDataSetChanged();
     }
 

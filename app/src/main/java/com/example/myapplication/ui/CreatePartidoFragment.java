@@ -20,6 +20,7 @@ import com.example.myapplication.databinding.FragmentCreatePartidoBinding;
 import com.example.myapplication.models.Partido;
 import com.example.myapplication.network.RetrofitClient;
 import com.example.myapplication.network.SupabaseApi;
+import com.example.myapplication.utils.UiUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -79,43 +80,67 @@ public class CreatePartidoFragment extends Fragment {
         String precioStr = binding.etPrecio.getText().toString().trim();
         String alias = binding.etAlias.getText().toString().trim();
 
+        // Validaciones mejoradas
         if (lugar.isEmpty() || fechaHora.isEmpty() || precioStr.isEmpty()) {
-            Toast.makeText(requireContext(), "Por favor completa los campos obligatorios", Toast.LENGTH_SHORT).show();
+            UiUtils.mostrarToast(requireContext(), "Por favor completa los campos");
             return;
         }
 
-        double precio = Double.parseDouble(precioStr);
-        int maxJugadores = binding.rbF5.isChecked() ? 10 : 14;
+        // Validar formato fecha (yyyy-MM-dd HH:mm)
+        if (!fechaHora.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}")) {
+            UiUtils.mostrarToast(requireContext(), "Formato de fecha inválido");
+            return;
+        }
 
-        Partido partido = new Partido();
-        partido.setLugar(lugar);
-        String[] parts = fechaHora.split(" ");
-        partido.setFecha(parts[0]);
-        partido.setHora(parts[1]);
-        partido.setPrecio(precio);
-        partido.setMaxJugadores(maxJugadores);
-        partido.setAliasPago(alias);
-        partido.setOrganizadorId(AuthManager.getInstance(requireContext()).getUserId());
+        try {
+            double precio = Double.parseDouble(precioStr);
 
-        binding.btnGuardarPartido.setEnabled(false);
-        supabaseApi.createPartido(partido).enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(requireContext(), "Partido creado con éxito", Toast.LENGTH_SHORT).show();
-                    Navigation.findNavController(requireView()).navigateUp();
+            // Validación mejorada del rango de precio usando UiUtils
+            if (!UiUtils.validarPrecio(precio)) {
+                if (precio <= 0) {
+                    UiUtils.mostrarToast(requireContext(), "El precio debe ser mayor a $0");
                 } else {
-                    Toast.makeText(requireContext(), "Error al crear partido: " + response.code(), Toast.LENGTH_SHORT).show();
+                    UiUtils.mostrarToast(requireContext(), "Precio muy alto (máximo $10.000)");
+                }
+                return;
+            }
+
+            String[] parts = fechaHora.split(" ");
+            int maxJugadores = binding.rbF5.isChecked() ? 10 : 14;
+
+            Partido partido = new Partido();
+            partido.setLugar(lugar);
+            partido.setFecha(parts[0]);
+            partido.setHora(parts[1]);
+            partido.setPrecio(precio);
+            partido.setMaxJugadores(maxJugadores);
+            partido.setAliasPago(alias);
+            partido.setOrganizadorId(AuthManager.getInstance(requireContext()).getUserId());
+
+            binding.btnGuardarPartido.setEnabled(false);
+            
+            supabaseApi.createPartido(partido).enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        UiUtils.mostrarToast(requireContext(), "Partido creado con éxito");
+                        Navigation.findNavController(requireView()).navigateUp();
+                    } else {
+                        UiUtils.mostrarToast(requireContext(), "Error al crear partido: " + response.code());
+                        binding.btnGuardarPartido.setEnabled(true);
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                    UiUtils.mostrarToast(requireContext(), "Error de red: " + t.getMessage());
                     binding.btnGuardarPartido.setEnabled(true);
                 }
-            }
-
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                Toast.makeText(requireContext(), "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                binding.btnGuardarPartido.setEnabled(true);
-            }
-        });
+            });
+        } catch (NumberFormatException e) {
+            UiUtils.mostrarToast(requireContext(), "Precio inválido");
+            binding.btnGuardarPartido.setEnabled(true);
+        }
     }
 
     @Override

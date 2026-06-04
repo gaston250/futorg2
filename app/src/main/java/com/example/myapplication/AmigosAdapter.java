@@ -6,13 +6,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.models.Jugador;
+import com.example.myapplication.utils.UiUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +76,7 @@ public class AmigosAdapter extends ListAdapter<Jugador, AmigosAdapter.ViewHolder
             try {
                 v.getContext().startActivity(intent);
             } catch (Exception e) {
-                Toast.makeText(v.getContext(), "WhatsApp no instalado", Toast.LENGTH_SHORT).show();
+                UiUtils.mostrarToast(v.getContext(), "WhatsApp no instalado");
             }
         });
 
@@ -98,6 +98,19 @@ public class AmigosAdapter extends ListAdapter<Jugador, AmigosAdapter.ViewHolder
             tvNivel = itemView.findViewById(R.id.tvAmigoNivel);
             btnWhatsApp = itemView.findViewById(R.id.btnInvitarWhatsApp);
             btnApp = itemView.findViewById(R.id.btnInvitarApp);
+        }
+    }
+
+    private static class JugadorDiffCallback extends androidx.recyclerview.widget.DiffUtil.ItemCallback<Jugador> {
+        @Override
+        public boolean areItemsTheSame(@NonNull Jugador oldItem, @NonNull Jugador newItem) {
+            return java.util.Objects.equals(oldItem.getId(), newItem.getId());
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull Jugador oldItem, @NonNull Jugador newItem) {
+            return oldItem.getGoles() == newItem.getGoles() &&
+                   java.util.Objects.equals(oldItem.getNombre(), newItem.getNombre());
         }
     }
 }

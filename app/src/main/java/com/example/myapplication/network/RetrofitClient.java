@@ -20,32 +20,32 @@ public class RetrofitClient {
     private static final int TIMEOUT_SECONDS = 30;
 
     public static void init(AuthManager authManager) {
-        if (retrofit == null) {
-            // Configure Logging Interceptor
-            HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-            logging.setLevel(BuildConfig.DEBUG ? HttpLoggingInterceptor.Level.BODY : HttpLoggingInterceptor.Level.NONE);
+        // Reset retrofit instance to allow re-initialization with new auth state (e.g. after login)
+        retrofit = null;
+        
+        // Configure Logging Interceptor
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(BuildConfig.DEBUG ? HttpLoggingInterceptor.Level.BODY : HttpLoggingInterceptor.Level.NONE);
 
-            // Configure OkHttpClient with timeouts and interceptors
-            OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                    .addInterceptor(logging)
-                    .addInterceptor(new AuthInterceptor(authManager))
-                    .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-                    .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-                    .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-                    .retryOnConnectionFailure(true)
+        // Configure OkHttpClient with timeouts and interceptors
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .addInterceptor(logging)
+                .addInterceptor(new AuthInterceptor(authManager))
+                .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true)
+                .build();
+
+        // Build Retrofit instance
+        try {
+            retrofit = new Retrofit.Builder()
+                    .baseUrl(BuildConfig.SUPABASE_URL)
+                    .client(okHttpClient)
+                    .addConverterFactory(GsonConverterFactory.create())
                     .build();
-
-            // Build Retrofit instance
-            try {
-                retrofit = new Retrofit.Builder()
-                        .baseUrl(BuildConfig.SUPABASE_URL)
-                        .client(okHttpClient)
-                        .addConverterFactory(GsonConverterFactory.create())
-                        .build();
-            } catch (Exception e) {
-                // Log and handle potential malformed URL or other initialization errors
-                e.printStackTrace();
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

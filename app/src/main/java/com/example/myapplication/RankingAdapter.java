@@ -35,6 +35,10 @@ public class RankingAdapter extends ListAdapter<Jugador, RankingAdapter.ViewHold
         super(new JugadorDiffCallback());
     }
 
+    public RankingAdapter(@NonNull DiffUtil.ItemCallback<Jugador> diffCallback) {
+        super(diffCallback);
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -86,6 +90,19 @@ public class RankingAdapter extends ListAdapter<Jugador, RankingAdapter.ViewHold
             tvPJ = itemView.findViewById(R.id.tvRankPJ);
             tvGoles = itemView.findViewById(R.id.tvRankGoles);
             tvWinRate = itemView.findViewById(R.id.tvRankWR);
+        }
+    }
+
+    private static class JugadorDiffCallback extends DiffUtil.ItemCallback<Jugador> {
+        @Override
+        public boolean areItemsTheSame(@NonNull Jugador oldItem, @NonNull Jugador newItem) {
+            return Objects.equals(oldItem.getId(), newItem.getId());
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull Jugador oldItem, @NonNull Jugador newItem) {
+            return oldItem.getGoles() == newItem.getGoles() &&
+                   Objects.equals(oldItem.getNombre(), newItem.getNombre());
         }
     }
 }

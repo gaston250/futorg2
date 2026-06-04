@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     
     private SupabaseApi supabaseApi;
     private MainViewModel viewModel;
+    private NavController navController;
     
     private String userName = "Jugador";
     private String userId = "";
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
         RetrofitClient.init(authManager);
         setupNavigation();
+        setupBottomNavigation();
         setupRetrofit();
         
         loadInitialData();
@@ -69,7 +71,12 @@ public class MainActivity extends AppCompatActivity {
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.nav_host_fragment);
         if (navHostFragment != null) {
-            NavController navController = navHostFragment.getNavController();
+            navController = navHostFragment.getNavController();
+        }
+    }
+
+    private void setupBottomNavigation() {
+        if (navController != null) {
             NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
 
             binding.fabCreateMatch.setOnClickListener(v -> 

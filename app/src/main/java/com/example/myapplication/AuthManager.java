@@ -66,6 +66,18 @@ public class AuthManager {
         return sharedPreferences.getString(KEY_USER_NAME, "Jugador");
     }
 
+    public void setUserName(String name) {
+        sharedPreferences.edit().putString(KEY_USER_NAME, name).apply();
+    }
+
+    public String getUserEmail() {
+        return sharedPreferences.getString(KEY_USER_EMAIL, null);
+    }
+
+    public static String getApiKey() {
+        return com.example.myapplication.BuildConfig.SUPABASE_KEY;
+    }
+
     public boolean isLoggedIn() {
         return getToken() != null;
     }

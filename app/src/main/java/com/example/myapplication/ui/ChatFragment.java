@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,13 +12,28 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.myapplication.AuthManager;
 import com.example.myapplication.MensajesAdapter;
 import com.example.myapplication.databinding.FragmentChatBinding;
+import com.example.myapplication.models.Mensaje;
+import com.example.myapplication.models.Partido;
+import com.example.myapplication.network.RetrofitClient;
+import com.example.myapplication.network.SupabaseApi;
+import com.example.myapplication.utils.UiUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ChatFragment extends Fragment {
 
     private FragmentChatBinding binding;
     private MainViewModel viewModel;
+    private MensajesAdapter adapter;
+    private List<Mensaje> listaMensajes = new ArrayList<>();
 
     @Nullable
     @Override
@@ -31,10 +47,70 @@ public class ChatFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
 
+        setupRecyclerView();
+        setupClickListeners();
+        observeViewModel();
+    }
+
+    private void setupRecyclerView() {
+        adapter = new MensajesAdapter(listaMensajes);
         binding.rvChatMensajes.setLayoutManager(new LinearLayoutManager(getContext()));
-        
+        binding.rvChatMensajes.setAdapter(adapter);
+    }
+
+    private void setupClickListeners() {
+        binding.btnChatSend.setOnClickListener(v -> {
+            String texto = binding.etChatMessage.getText().toString().trim();
+            if (!texto.isEmpty()) {
+                enviarMensaje(texto, "texto");
+                binding.etChatMessage.setText("");
+            }
+        });
+
+        binding.chipConfirmar.setOnClickListener(v -> enviarMensaje("¡Confirmado! ✅", "accion"));
+        binding.chipTarde.setOnClickListener(v -> enviarMensaje("Llego un toque tarde ⏰", "accion"));
+        binding.chipNoVoy.setOnClickListener(v -> enviarMensaje("Esta no voy, mala mía ❌", "accion"));
+    }
+
+    private void observeViewModel() {
         viewModel.getChatMensajes().observe(getViewLifecycleOwner(), mensajes -> {
-            binding.rvChatMensajes.setAdapter(new MensajesAdapter(mensajes));
+            if (mensajes != null) {
+                listaMensajes.clear();
+                listaMensajes.addAll(mensajes);
+                adapter.notifyDataSetChanged();
+                binding.rvChatMensajes.scrollToPosition(listaMensajes.size() - 1);
+            }
+        });
+
+        viewModel.getUltimoPartido().observe(getViewLifecycleOwner(), this::updateMatchInfo);
+    }
+
+    private void updateMatchInfo(Partido partido) {
+        if (partido == null) return;
+        binding.tvChatMatchPlace.setText(partido.getLugar());
+        binding.tvChatMatchStatus.setText(partido.getFecha() + " " + partido.getHora());
+        
+        cargarMensajes(partido.getId());
+    }
+
+    private void cargarMensajes(int partidoId) {
+        AuthManager authManager = AuthManager.getInstance(requireContext());
+        viewModel.fetchMensajes(partidoId, authManager.getToken());
+    }
+
+    private void enviarMensaje(String texto, String tipo) {
+        Partido partido = viewModel.getUltimoPartido().getValue();
+        if (partido == null) return;
+
+        AuthManager authManager = AuthManager.getInstance(requireContext());
+        Mensaje mensaje = new Mensaje(authManager.getUserName(), texto, partido.getId(), tipo);
+
+        viewModel.sendMessage(mensaje, authManager.getToken()).observe(getViewLifecycleOwner(), success -> {
+            if (success) {
+                cargarMensajes(partido.getId());
+            } else {
+                UiUtils.mostrarToast(getContext(), "Error al enviar mensaje");
+            }
         });
     }
 

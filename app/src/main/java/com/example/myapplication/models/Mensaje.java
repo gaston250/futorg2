@@ -49,10 +49,23 @@ public class Mensaje {
 
     // Getters
     public String getJugadorNombre() { return jugadorNombre; }
+    public void setJugadorNombre(String jugadorNombre) { this.jugadorNombre = jugadorNombre; }
+
     public String getTexto() { return texto; }
+    public void setTexto(String texto) { this.texto = texto; }
+
     public int getPartidoId() { return partidoId; }
+    public void setPartidoId(int partidoId) { this.partidoId = partidoId; }
+
     public String getTipoMensaje() { return tipoMensaje; }
+    public void setTipoMensaje(String tipoMensaje) { this.tipoMensaje = tipoMensaje; }
+
     public String getAvatarInicial() { return avatarInicial; }
+    public void setAvatarInicial(String avatarInicial) { this.avatarInicial = avatarInicial; }
+
     public String getCreatedAt() { return createdAt; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+
     public boolean isSent() { return isSent; }
+    public void setSent(boolean sent) { isSent = sent; }
 }

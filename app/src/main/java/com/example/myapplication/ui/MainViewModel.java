@@ -5,22 +5,28 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.MediatorLiveData;
 
+import com.example.myapplication.data.repository.ApiRepository;
 import com.example.myapplication.data.repository.JugadorRepository;
 import com.example.myapplication.data.repository.PartidoRepository;
 import com.example.myapplication.models.Jugador;
 import com.example.myapplication.models.Mensaje;
 import com.example.myapplication.models.Partido;
+import com.example.myapplication.models.Voto;
 
 import java.util.List;
+
+import okhttp3.RequestBody;
 
 public class MainViewModel extends AndroidViewModel {
 
     private final JugadorRepository jugadorRepository;
     private final PartidoRepository partidoRepository;
+    private final ApiRepository apiRepository;
     
-    private final LiveData<List<Jugador>> rankingList;
-    private final LiveData<Partido> ultimoPartido;
+    private final MediatorLiveData<List<Jugador>> ranking = new MediatorLiveData<>();
+    private final MediatorLiveData<Partido> ultimoPartido = new MediatorLiveData<>();
     
     private final MutableLiveData<List<Jugador>> confirmadosList = new MutableLiveData<>();
     private final MutableLiveData<List<Mensaje>> chatMensajes = new MutableLiveData<>();
@@ -31,12 +37,49 @@ public class MainViewModel extends AndroidViewModel {
         super(application);
         jugadorRepository = new JugadorRepository(application);
         partidoRepository = new PartidoRepository(application);
+        apiRepository = new ApiRepository();
         
-        rankingList = jugadorRepository.getRanking();
-        ultimoPartido = partidoRepository.getUltimoPartido();
+        ranking.addSource(jugadorRepository.getRanking(), ranking::setValue);
+        ultimoPartido.addSource(partidoRepository.getUltimoPartido(), ultimoPartido::setValue);
     }
 
-    public LiveData<List<Jugador>> getRankingList() { return rankingList; }
+    public LiveData<Boolean> sumarseAPartido(int partidoId, String userName, String token) {
+        return apiRepository.agregarConfirmado(partidoId, userName, token);
+    }
+
+    public void fetchConfirmados(int partidoId) {
+        apiRepository.getConfirmados(partidoId).observeForever(confirmadosList::setValue);
+    }
+
+    public LiveData<Boolean> sendMessage(Mensaje mensaje, String token) {
+        return apiRepository.enviarMensaje(mensaje, token);
+    }
+
+    public void fetchMensajes(int partidoId, String token) {
+        apiRepository.getMensajes(partidoId, token).observeForever(chatMensajes::setValue);
+    }
+
+    public LiveData<Boolean> closeMatch(int partidoId, RequestBody body) {
+        return apiRepository.cerrarPartido(partidoId, body);
+    }
+
+    public LiveData<Boolean> voteMVP(Voto voto) {
+        return apiRepository.emitirVoto(voto);
+    }
+
+    public void fetchMisPartidos(String userName) {
+        apiRepository.getPartidosUsuario(userName).observeForever(misPartidosList::setValue);
+    }
+
+    public LiveData<Jugador> fetchUserProfile(String email) {
+        return apiRepository.getJugadorByEmail(email);
+    }
+
+    public LiveData<Boolean> updateUserProfile(String userId, Jugador jugador, String token) {
+        return apiRepository.updatePerfil(userId, jugador, token);
+    }
+
+    public LiveData<List<Jugador>> getRankingList() { return ranking; }
     
     public void refreshRanking() {
         jugadorRepository.refreshRanking();

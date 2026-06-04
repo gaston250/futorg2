@@ -16,6 +16,7 @@ import com.example.myapplication.network.RetrofitClient;
 import com.example.myapplication.network.SupabaseApi;
 import com.example.myapplication.BuildConfig;
 import com.example.myapplication.R;
+import com.example.myapplication.utils.UiUtils;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -61,16 +62,24 @@ public class LoginActivity extends AppCompatActivity {
 
             if (isLoginMode) {
                 if (!email.isEmpty() && !pass.isEmpty()) {
-                    iniciarSesionReal(email, pass);
+                    if (UiUtils.validarEmail(email)) {
+                        iniciarSesionReal(email, pass);
+                    } else {
+                        UiUtils.mostrarToast(this, "Email inválido");
+                    }
                 } else {
-                    Toast.makeText(this, "Completa Email y Contraseña", Toast.LENGTH_SHORT).show();
+                    UiUtils.mostrarToast(this, "Completa Email y Contraseña");
                 }
             } else {
                 String username = Objects.requireNonNull(etUsername.getText()).toString().trim();
                 if (!email.isEmpty() && !pass.isEmpty() && !username.isEmpty()) {
-                    registrarUsuarioReal(username, email, pass);
+                    if (UiUtils.validarEmail(email)) {
+                        registrarUsuarioReal(username, email, pass);
+                    } else {
+                        UiUtils.mostrarToast(this, "Email inválido");
+                    }
                 } else {
-                    Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
+                    UiUtils.mostrarToast(this, "Completa todos los campos");
                 }
             }
         });
@@ -129,10 +138,10 @@ public class LoginActivity extends AppCompatActivity {
                 @Override
                 public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                     if (response.isSuccessful()) {
-                        Toast.makeText(LoginActivity.this, "Registro exitoso. ¡Bienvenido!", Toast.LENGTH_LONG).show();
+                        UiUtils.mostrarToast(LoginActivity.this, "Registro exitoso. ¡Bienvenido!");
                         toggleMode();
                     } else {
-                        Toast.makeText(LoginActivity.this, "Error en el registro", Toast.LENGTH_SHORT).show();
+                        UiUtils.mostrarToast(LoginActivity.this, "Error en el registro");
                     }
                 }
                 @Override public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {}
@@ -174,7 +183,7 @@ public class LoginActivity extends AppCompatActivity {
                             Log.e("Login", "Error parseando respuesta", e);
                         }
                     } else {
-                        Toast.makeText(LoginActivity.this, "Error al ingresar", Toast.LENGTH_SHORT).show();
+                        UiUtils.mostrarToast(LoginActivity.this, "Error al ingresar");
                     }
                 }
                 @Override public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {}
@@ -192,7 +201,11 @@ public class LoginActivity extends AppCompatActivity {
         builder.setPositiveButton("Enviar", (dialog, which) -> {
             TextInputEditText etResetEmail = customLayout.findViewById(R.id.etResetEmail);
             String email = Objects.requireNonNull(etResetEmail.getText()).toString();
-            if (!email.isEmpty()) recuperarPassword(email);
+            if (UiUtils.validarEmail(email)) {
+                recuperarPassword(email);
+            } else {
+                UiUtils.mostrarToast(this, "Email inválido");
+            }
         });
         builder.setNegativeButton("Cancelar", null);
         builder.show();
@@ -206,7 +219,7 @@ public class LoginActivity extends AppCompatActivity {
             supabaseApi.resetPassword(body).enqueue(new Callback<Void>() {
                 @Override
                 public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
-                    Toast.makeText(LoginActivity.this, "Si el correo existe, recibirás un link", Toast.LENGTH_LONG).show();
+                    UiUtils.mostrarToast(LoginActivity.this, "Si el correo existe, recibirás un link");
                 }
                 @Override public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {}
             });

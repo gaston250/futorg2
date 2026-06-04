@@ -40,26 +40,26 @@ public interface SupabaseApi {
 
     @PATCH("rest/v1/jugadores")
     Call<Void> updatePerfil(
-        @Query("email") String emailFilter,
-        @Body Jugador jugador
+            @Query("email") String emailFilter,
+            @Body Jugador jugador
     );
 
     @GET("rest/v1/jugadores")
     Call<List<Jugador>> getJugadorByEmail(
-        @Query("email") String emailFilter,
-        @Query("select") String select
+        @Query("select") String select,
+        @Query("email") String emailFilter
     );
 
     // CHAT METHODS
     @GET("rest/v1/mensajes")
     Call<List<Mensaje>> getMensajes(
-        @Query("partido_id") String matchIdFilter,
-        @Query("select") String select,
-        @Query("order") String order
+            @Query("partido_id") String matchIdFilter,
+            @Query("select") String select,
+            @Query("order") String order
     );
 
     @POST("rest/v1/mensajes")
-    Call<Void> sendMensaje(@Body Mensaje mensaje);
+    Call<Void> enviarMensaje(@Body Mensaje mensaje);
 
     // AUTH METHODS
     @POST("auth/v1/signup")
@@ -81,10 +81,20 @@ public interface SupabaseApi {
 
     // CONFIRMADOS METHODS
     @GET("rest/v1/confirmados")
-    Call<List<Jugador>> getConfirmados(@Query("select") String select);
+    Call<List<Jugador>> getConfirmados(
+            @Query("select") String select,
+            @Query("partido_id") String partidoIdFilter
+    );
 
     @POST("rest/v1/confirmados")
-    Call<Void> addConfirmado(@Body RequestBody body);
+    Call<Void> agregarConfirmado(@Body RequestBody body);
+
+    @PATCH("rest/v1/confirmados")
+    Call<Void> updatePagoConfirmado(
+            @Query("partido_id") String partidoIdFilter,
+            @Query("jugador_nombre") String nombreFilter,
+            @Body RequestBody body
+    );
 
     @DELETE("rest/v1/confirmados")
     Call<Void> deleteConfirmado(
@@ -100,5 +110,11 @@ public interface SupabaseApi {
     Call<Void> cerrarPartido(
             @Query("id") String idFilter,
             @Body RequestBody body
+    );
+
+    @GET("rest/v1/confirmados")
+    Call<List<ResponseBody>> getPartidosUsuario(
+            @Query("jugador_nombre") String filter,
+            @Query("select") String select
     );
 }
