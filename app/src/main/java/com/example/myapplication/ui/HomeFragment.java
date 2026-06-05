@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,13 +19,13 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.myapplication.R;
 import com.example.myapplication.AuthManager;
 import com.example.myapplication.RankingAdapter;
 import com.example.myapplication.ConfirmadosAdapter;
 import com.example.myapplication.databinding.FragmentHomeBinding;
 import com.example.myapplication.models.Jugador;
 import com.example.myapplication.models.Partido;
-import com.example.myapplication.network.RetrofitClient;
 import com.example.myapplication.network.SupabaseApi;
 import com.example.myapplication.utils.UiUtils;
 
@@ -46,7 +47,6 @@ public class HomeFragment extends Fragment {
     private MainViewModel viewModel;
     private RankingAdapter rankingAdapter;
     private ConfirmadosAdapter confirmadosAdapter;
-    private SupabaseApi supabaseApi;
     private final List<String> listaConfirmadosNombres = new ArrayList<>();
 
     @Nullable
@@ -60,7 +60,6 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
-        supabaseApi = RetrofitClient.createService(SupabaseApi.class);
 
         setupRecyclerViews();
         setupClickListeners();
@@ -76,7 +75,10 @@ public class HomeFragment extends Fragment {
         });
 
         binding.btnMap.setOnClickListener(v -> {
-            abrirMapa(binding.tvLugar.getText().toString());
+            Partido partido = viewModel.getUltimoPartido().getValue();
+            if (partido != null && partido.getLugar() != null) {
+                abrirMapa(partido.getLugar());
+            }
         });
 
         binding.btnShare.setOnClickListener(v -> {
@@ -156,38 +158,44 @@ public class HomeFragment extends Fragment {
             json.put("is_closed", true);
             json.put("estado", "finalizado");
             
-            RequestBody body = RequestBody.create(MediaType.parse("application/json"), json.toString());
+            RequestBody body = RequestBody.create(json.toString(), MediaType.get("application/json"));
             
             viewModel.closeMatch(partido.getId(), body).observe(getViewLifecycleOwner(), success -> {
-                if (success) {
+                if (Boolean.TRUE.equals(success)) {
                     UiUtils.mostrarToast(getContext(), "Partido finalizado");
                     viewModel.refreshUltimoPartido();
                     binding.cardVotacionMVP.setVisibility(View.VISIBLE);
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("HomeFragment", "Error cerrando partido", e);
         }
     }
 
     private void mostrarDialogoVotacionMVP() {
-        // En una app real, aquí cargaríamos la lista de confirmados del partido
-        // Por ahora, usamos la lista de ranking como ejemplo
         List<Jugador> jugadores = viewModel.getRankingList().getValue();
-        if (jugadores == null || jugadores.isEmpty()) return;
-
-        String[] nombres = new String[jugadores.size()];
-        for (int i = 0; i < jugadores.size(); i++) {
-            nombres[i] = jugadores.get(i).getNombre();
+        if (jugadores == null || jugadores.isEmpty()) {
+            UiUtils.mostrarToast(requireContext(), "No hay jugadores para votar");
+            return;
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("¿Quién fue el MVP?");
-        builder.setItems(nombres, (dialog, which) -> {
-            String selectedPlayer = nombres[which];
-            enviarVotoMVP(selectedPlayer);
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_votacion_mvp, null);
+        androidx.recyclerview.widget.RecyclerView rv = dialogView.findViewById(R.id.rvVotacionMVP);
+        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
+        
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(dialogView)
+                .setTitle("¿Quién fue el MVP?")
+                .setNegativeButton("Cancelar", null)
+                .create();
+
+        com.example.myapplication.VotacionAdapter votacionAdapter = new com.example.myapplication.VotacionAdapter(jugadores, jugador -> {
+            enviarVotoMVP(jugador.getNombre());
+            dialog.dismiss();
         });
-        builder.show();
+        
+        rv.setAdapter(votacionAdapter);
+        dialog.show();
     }
 
     private void enviarVotoMVP(String nombreJugador) {
@@ -201,13 +209,13 @@ public class HomeFragment extends Fragment {
             voto.setPartidoId(partido.getId());
 
             viewModel.voteMVP(voto).observe(getViewLifecycleOwner(), success -> {
-                if (success) {
+                if (Boolean.TRUE.equals(success)) {
                     UiUtils.mostrarToast(getContext(), "Voto registrado para " + nombreJugador);
                     binding.cardVotacionMVP.setVisibility(View.GONE);
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("HomeFragment", "Error enviando voto", e);
         }
     }
 
@@ -258,34 +266,42 @@ public class HomeFragment extends Fragment {
             JSONObject json = new JSONObject();
             json.put("pagado", pagado);
             
-            RequestBody body = RequestBody.create(MediaType.parse("application/json"), json.toString());
-            SupabaseApi api = RetrofitClient.createService(SupabaseApi.class);
+            RequestBody body = RequestBody.create(json.toString(), MediaType.get("application/json"));
+            com.example.myapplication.network.SupabaseApi api = com.example.myapplication.network.RetrofitClient.createService(com.example.myapplication.network.SupabaseApi.class);
             
             // Usamos PATCH para actualizar el estado de pago del jugador en ese partido
             // En Supabase: rest/v1/confirmados?partido_id=eq.X&jugador_nombre=eq.Y
             api.updatePagoConfirmado("eq." + partido.getId(), "eq." + nombreJugador, body).enqueue(new Callback<Void>() {
                 @Override
-                public void onResponse(Call<Void> call, Response<Void> response) {
+                public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                     if (response.isSuccessful()) {
                         cargarConfirmados(partido.getId());
                     }
                 }
-                @Override public void onFailure(Call<Void> call, Throwable t) {}
+                @Override public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                    Log.e("HomeFragment", "Error onFailure actualizando pago", t);
+                }
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("HomeFragment", "Error actualizando pago", e);
         }
     }
 
     private void observeViewModel() {
         viewModel.getRankingList().observe(getViewLifecycleOwner(), ranking -> {
-            if (ranking != null) {
-                rankingAdapter.submitList(ranking);
+            if (ranking != null && !ranking.isEmpty()) {
+                rankingAdapter.submitList(new ArrayList<>(ranking));
+            } else {
+                rankingAdapter.submitList(new ArrayList<>());
             }
         });
 
         viewModel.getUltimoPartido().observe(getViewLifecycleOwner(), this::updatePartidoUI);
         
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> 
+            binding.pbHome.setVisibility(loading ? View.VISIBLE : View.GONE)
+        );
+
         viewModel.getConfirmadosList().observe(getViewLifecycleOwner(), confirmados -> {
             if (confirmados != null) {
                 listaConfirmadosNombres.clear();
@@ -302,14 +318,14 @@ public class HomeFragment extends Fragment {
                 binding.tvCountConfirmados.setText("Confirmados (" + confirmados.size() + "/10)");
 
                 // Calcular recaudado
-                double total = 0;
+                double totalRecaudado = 0;
                 Partido actual = viewModel.getUltimoPartido().getValue();
                 for (Jugador j : confirmados) {
                     if (j.isPagado() && actual != null) {
-                        total += actual.getPrecio();
+                        totalRecaudado += actual.getPrecio();
                     }
                 }
-                binding.tvTotalRecaudado.setText("Total: $" + (int)total);
+                binding.tvTotalRecaudado.setText(String.format(Locale.getDefault(), "Total: $%.0f", totalRecaudado));
 
                 // Actualizar botón Me Sumo si el partido está lleno
                 if (actual != null) {
@@ -387,10 +403,6 @@ public class HomeFragment extends Fragment {
 
         // Cargar confirmados del partido
         cargarConfirmados(partido.getId());
-    }
-
-    private boolean esPartidoLleno(Partido partido, int confirmadosCount) {
-        return confirmadosCount >= partido.getMaxJugadores();
     }
 
     private void cargarConfirmados(int partidoId) {

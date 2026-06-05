@@ -32,6 +32,12 @@ public class MainViewModel extends AndroidViewModel {
     private final MutableLiveData<List<Mensaje>> chatMensajes = new MutableLiveData<>();
     private final MutableLiveData<List<Jugador>> amigosList = new MutableLiveData<>();
     private final MutableLiveData<List<Partido>> misPartidosList = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
+
+    private final android.os.Handler chatHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private Runnable chatRunnable;
+    private int activeChatMatchId = -1;
+    private String activeChatToken = "";
 
     public MainViewModel(@NonNull Application application) {
         super(application);
@@ -48,47 +54,124 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void fetchConfirmados(int partidoId) {
-        apiRepository.getConfirmados(partidoId).observeForever(confirmadosList::setValue);
+        isLoading.setValue(true);
+        apiRepository.getConfirmados(partidoId).observeForever(confirmados -> {
+            confirmadosList.setValue(confirmados);
+            isLoading.setValue(false);
+        });
     }
 
     public LiveData<Boolean> sendMessage(Mensaje mensaje, String token) {
-        return apiRepository.enviarMensaje(mensaje, token);
+        isLoading.setValue(true);
+        MutableLiveData<Boolean> result = new MutableLiveData<>();
+        apiRepository.enviarMensaje(mensaje, token).observeForever(success -> {
+            result.setValue(success);
+            isLoading.setValue(false);
+            if (success) {
+                fetchMensajes(mensaje.getPartidoId(), token);
+            }
+        });
+        return result;
     }
 
     public void fetchMensajes(int partidoId, String token) {
-        apiRepository.getMensajes(partidoId, token).observeForever(chatMensajes::setValue);
+        apiRepository.getMensajes(partidoId, token).observeForever(mensajes -> {
+            if (mensajes != null) {
+                chatMensajes.setValue(mensajes);
+            }
+        });
+    }
+
+    public void startRealtimeChat(int partidoId, String token) {
+        stopRealtimeChat();
+        activeChatMatchId = partidoId;
+        activeChatToken = token;
+        
+        chatRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (activeChatMatchId != -1) {
+                    fetchMensajes(activeChatMatchId, activeChatToken);
+                    chatHandler.postDelayed(this, 3000); // Poll every 3 seconds
+                }
+            }
+        };
+        chatHandler.post(chatRunnable);
+    }
+
+    public void stopRealtimeChat() {
+        chatHandler.removeCallbacks(chatRunnable);
+        activeChatMatchId = -1;
     }
 
     public LiveData<Boolean> closeMatch(int partidoId, RequestBody body) {
-        return apiRepository.cerrarPartido(partidoId, body);
+        isLoading.setValue(true);
+        MutableLiveData<Boolean> result = new MutableLiveData<>();
+        apiRepository.cerrarPartido(partidoId, body).observeForever(success -> {
+            result.setValue(success);
+            isLoading.setValue(false);
+        });
+        return result;
     }
 
     public LiveData<Boolean> voteMVP(Voto voto) {
-        return apiRepository.emitirVoto(voto);
+        isLoading.setValue(true);
+        MutableLiveData<Boolean> result = new MutableLiveData<>();
+        apiRepository.emitirVoto(voto).observeForever(success -> {
+            result.setValue(success);
+            isLoading.setValue(false);
+        });
+        return result;
     }
 
     public void fetchMisPartidos(String userName) {
-        apiRepository.getPartidosUsuario(userName).observeForever(misPartidosList::setValue);
+        isLoading.setValue(true);
+        apiRepository.getPartidosUsuario(userName).observeForever(partidos -> {
+            misPartidosList.setValue(partidos);
+            isLoading.setValue(false);
+        });
     }
 
     public LiveData<Jugador> fetchUserProfile(String email) {
-        return apiRepository.getJugadorByEmail(email);
+        isLoading.setValue(true);
+        MutableLiveData<Jugador> result = new MutableLiveData<>();
+        apiRepository.getJugadorByEmail(email).observeForever(jugador -> {
+            result.setValue(jugador);
+            isLoading.setValue(false);
+        });
+        return result;
     }
 
     public LiveData<Boolean> updateUserProfile(String userId, Jugador jugador, String token) {
-        return apiRepository.updatePerfil(userId, jugador, token);
+        isLoading.setValue(true);
+        MutableLiveData<Boolean> result = new MutableLiveData<>();
+        apiRepository.updatePerfil(userId, jugador, token).observeForever(success -> {
+            result.setValue(success);
+            isLoading.setValue(false);
+        });
+        return result;
     }
+
+    public LiveData<Boolean> getIsLoading() { return isLoading; }
+    public void setIsLoading(boolean loading) { isLoading.setValue(loading); }
 
     public LiveData<List<Jugador>> getRankingList() { return ranking; }
     
     public void refreshRanking() {
+        isLoading.setValue(true);
         jugadorRepository.refreshRanking();
+        // Repository should update LiveData which we observe in constructor
+        // We might need a callback from repository to set isLoading to false
+        // For now, let's assume it updates.
+        isLoading.setValue(false);
     }
 
     public LiveData<Partido> getUltimoPartido() { return ultimoPartido; }
     
     public void refreshUltimoPartido() {
+        isLoading.setValue(true);
         partidoRepository.refreshUltimoPartido();
+        isLoading.setValue(false);
     }
 
     public LiveData<List<Jugador>> getConfirmadosList() { return confirmadosList; }

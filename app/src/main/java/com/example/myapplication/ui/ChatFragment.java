@@ -83,6 +83,10 @@ public class ChatFragment extends Fragment {
         });
 
         viewModel.getUltimoPartido().observe(getViewLifecycleOwner(), this::updateMatchInfo);
+        
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> {
+            binding.pbChat.setVisibility(loading ? View.VISIBLE : View.GONE);
+        });
     }
 
     private void updateMatchInfo(Partido partido) {
@@ -90,12 +94,9 @@ public class ChatFragment extends Fragment {
         binding.tvChatMatchPlace.setText(partido.getLugar());
         binding.tvChatMatchStatus.setText(partido.getFecha() + " " + partido.getHora());
         
-        cargarMensajes(partido.getId());
-    }
-
-    private void cargarMensajes(int partidoId) {
+        // Iniciar polling en tiempo real
         AuthManager authManager = AuthManager.getInstance(requireContext());
-        viewModel.fetchMensajes(partidoId, authManager.getToken());
+        viewModel.startRealtimeChat(partido.getId(), authManager.getToken());
     }
 
     private void enviarMensaje(String texto, String tipo) {
@@ -105,18 +106,13 @@ public class ChatFragment extends Fragment {
         AuthManager authManager = AuthManager.getInstance(requireContext());
         Mensaje mensaje = new Mensaje(authManager.getUserName(), texto, partido.getId(), tipo);
 
-        viewModel.sendMessage(mensaje, authManager.getToken()).observe(getViewLifecycleOwner(), success -> {
-            if (success) {
-                cargarMensajes(partido.getId());
-            } else {
-                UiUtils.mostrarToast(getContext(), "Error al enviar mensaje");
-            }
-        });
+        viewModel.sendMessage(mensaje, authManager.getToken());
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        viewModel.stopRealtimeChat();
         binding = null;
     }
 }

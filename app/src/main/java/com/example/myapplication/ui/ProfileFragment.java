@@ -54,6 +54,11 @@ public class ProfileFragment extends Fragment {
 
         binding.fabCamara.setOnClickListener(v -> abrirSelectorFoto());
         binding.btnGuardarPerfil.setOnClickListener(v -> updateProfile());
+
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> {
+            binding.pbProfile.setVisibility(loading ? View.VISIBLE : View.GONE);
+            binding.btnGuardarPerfil.setEnabled(!loading);
+        });
         
         binding.ivPerfilFotoPro.setOnLongClickListener(v -> {
             logout();
@@ -67,7 +72,8 @@ public class ProfileFragment extends Fragment {
         
         binding.etPerfilNombre.setText(authManager.getUserName());
         
-        supabaseApi.getJugadorByEmail("*", "email.eq." + email).enqueue(new Callback<List<Jugador>>() {
+        // Corregido: parámetros según SupabaseApi actualizada
+        supabaseApi.getJugadorByEmail("eq." + email, "*").enqueue(new Callback<List<Jugador>>() {
             @Override
             public void onResponse(@NonNull Call<List<Jugador>> call, @NonNull Response<List<Jugador>> response) {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
@@ -93,14 +99,13 @@ public class ProfileFragment extends Fragment {
 
         binding.btnGuardarPerfil.setEnabled(false);
         
-        // Si no cargamos el perfil aún, creamos uno básico, 
-        // pero lo ideal es esperar a que currentJugador no sea null
         Jugador jugadorUpdate = currentJugador != null ? currentJugador : new Jugador();
         jugadorUpdate.setNombre(nuevoNombre);
-        // Asegurarse de no enviar el ID en el cuerpo del PATCH si es null o problemático,
-        // aunque GSON no envía nulls por defecto.
         
+        // Corregido: Añadidos headers y emailFilter según SupabaseApi
         supabaseApi.updatePerfil(
+            AuthManager.getApiKey(),
+            "Bearer " + authManager.getToken(),
             "eq." + authManager.getUserEmail(),
             jugadorUpdate
         ).enqueue(new Callback<Void>() {

@@ -49,6 +49,14 @@
                         android:src="@android:drawable/ic_menu_camera"
                         app:backgroundTint="@color/verde_neon"
                         app:tint="@color/black_mate" />
+                    <ProgressBar
+                        android:id="@+id/pbProfile"
+                        style="?android:attr/progressBarStyleSmall"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_centerInParent="true"
+                        android:visibility="gone"
+                        android:indeterminateTint="@color/verde_neon"/>
                 </RelativeLayout>
 
                 <com.google.android.material.textfield.TextInputLayout

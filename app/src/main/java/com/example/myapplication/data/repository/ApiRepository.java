@@ -1,5 +1,7 @@
 package com.example.myapplication.data.repository;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -55,7 +57,7 @@ public class ApiRepository {
             json.put("jugador_nombre", userName);
             json.put("pagado", false);
             
-            RequestBody body = RequestBody.create(MediaType.parse("application/json"), json.toString());
+            RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json"));
             api.agregarConfirmado(body).enqueue(new Callback<Void>() {
                 @Override
                 public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
@@ -67,6 +69,7 @@ public class ApiRepository {
                 }
             });
         } catch (Exception e) {
+            Log.e("ApiRepository", "Error agregando confirmado", e);
             result.setValue(false);
         }
         return result;
@@ -130,7 +133,7 @@ public class ApiRepository {
 
     public LiveData<Jugador> getJugadorByEmail(String email) {
         MutableLiveData<Jugador> data = new MutableLiveData<>();
-        api.getJugadorByEmail("*", "eq." + email).enqueue(new Callback<List<Jugador>>() {
+        api.getJugadorByEmail("eq." + email, "*").enqueue(new Callback<List<Jugador>>() {
             @Override
             public void onResponse(@NonNull Call<List<Jugador>> call, @NonNull Response<List<Jugador>> response) {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
@@ -144,7 +147,7 @@ public class ApiRepository {
 
     public LiveData<Boolean> updatePerfil(String email, Jugador jugador, String token) {
         MutableLiveData<Boolean> result = new MutableLiveData<>();
-        api.updatePerfil("eq." + email, jugador).enqueue(new Callback<Void>() {
+        api.updatePerfil(AuthManager.getApiKey(), "Bearer " + token, "eq." + email, jugador).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                 result.setValue(response.isSuccessful());
@@ -169,9 +172,6 @@ public class ApiRepository {
     }
 
     public LiveData<List<Partido>> getPartidosUsuario(String userName) {
-        MutableLiveData<List<Partido>> data = new MutableLiveData<>();
-        // Implementation depends on how the join is handled in SupabaseApi, 
-        // but this matches the call signature in ViewModel.
-        return data;
+        return new MutableLiveData<>();
     }
 }

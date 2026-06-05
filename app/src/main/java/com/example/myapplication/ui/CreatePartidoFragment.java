@@ -53,6 +53,11 @@ public class CreatePartidoFragment extends Fragment {
         setupDateTimePickers();
         
         binding.btnGuardarPartido.setOnClickListener(v -> crearPartido());
+
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> {
+            binding.pbCreate.setVisibility(loading ? View.VISIBLE : View.GONE);
+            binding.btnGuardarPartido.setEnabled(!loading);
+        });
     }
 
     private void setupDateTimePickers() {
@@ -119,7 +124,11 @@ public class CreatePartidoFragment extends Fragment {
 
             binding.btnGuardarPartido.setEnabled(false);
             
-            supabaseApi.createPartido(partido).enqueue(new Callback<Void>() {
+            supabaseApi.createPartido(
+                AuthManager.getApiKey(),
+                "Bearer " + AuthManager.getInstance(requireContext()).getToken(),
+                partido
+            ).enqueue(new Callback<Void>() {
                 @Override
                 public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                     if (response.isSuccessful()) {

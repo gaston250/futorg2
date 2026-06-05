@@ -13,6 +13,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
@@ -26,7 +27,11 @@ public interface SupabaseApi {
     );
 
     @POST("rest/v1/partidos")
-    Call<Void> createPartido(@Body Partido partido);
+    Call<Void> createPartido(
+        @Header("apikey") String apiKey,
+        @Header("Authorization") String auth,
+        @Body Partido partido
+    );
 
     @GET("rest/v1/partidos")
     Call<List<Partido>> getUltimoPartido(
@@ -40,14 +45,16 @@ public interface SupabaseApi {
 
     @PATCH("rest/v1/jugadores")
     Call<Void> updatePerfil(
+            @Header("apikey") String apiKey,
+            @Header("Authorization") String auth,
             @Query("email") String emailFilter,
             @Body Jugador jugador
     );
 
     @GET("rest/v1/jugadores")
     Call<List<Jugador>> getJugadorByEmail(
-        @Query("select") String select,
-        @Query("email") String emailFilter
+        @Query("email") String emailFilter,
+        @Query("select") String select
     );
 
     // CHAT METHODS

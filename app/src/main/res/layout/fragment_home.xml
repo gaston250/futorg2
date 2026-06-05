@@ -82,6 +82,16 @@
                         android:textStyle="bold"
                         android:letterSpacing="0.1"/>
 
+                    <ProgressBar
+                        android:id="@+id/pbHome"
+                        style="?android:attr/progressBarStyleSmall"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_toEndOf="@id/tvLugar"
+                        android:visibility="gone"
+                        android:indeterminateTint="@color/verde_neon"/>
+
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
